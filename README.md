@@ -4,7 +4,7 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Kaggle Dataset](https://img.shields.io/badge/dataset-Kaggle-blue)](https://www.kaggle.com/imsparsh/multimodal-mirex-emotion-dataset)
 
-A reproducible research repository for multi-modal clustering using audio, lyrics, and MIDI data with VAE variants and PCA baselines. This project implements three progressively complex tasks (easy, medium, hard) for emotion clustering in music data.
+A reproducible research repository for multi-modal clustering using audio, lyrics, and MIDI data with VAE variants and PCA baselines. This project implements three progressively complex tasks (easy, medium, hard) for clustering in music data (audio+text) using different varients of VAE.
 
 ## 📊 Overview
 
@@ -15,7 +15,7 @@ This project explores multi-modal representation learning for music emotion reco
 - **Models**: VAE variants (ConvVAE, BetaVAE, CVAE) vs PCA baselines
 - **Clustering**: K-Means, DBSCAN, Agglomerative clustering
 
-## 🚀 Quick Start
+## 🚀 Reproducing experiment results...
 
 ### 1. Clone Repository
 ```bash
@@ -40,21 +40,7 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-### 4. Install Dependencies
-```bash
-pip install torch torchvision torchaudio librosa numpy pandas scikit-learn matplotlib tqdm faiss-cpu sentence-transformers kaggle
-```
-
-### 5. Download Dataset
-```bash
-# First, get your Kaggle API token from https://www.kaggle.com/account
-# Place kaggle.json in ~/.kaggle/ (Linux/Mac) or %USERPROFILE%\.kaggle\ (Windows)
-
-# Download dataset
-kaggle datasets download -d imsparsh/multimodal-mirex-emotion-dataset --path data/raw --unzip
-```
-
-### 6. Run Experiments
+### 6. Reproduce Experiments result
 ```bash
 # Easy task - Basic VAE vs PCA
 python scripts/easy_task/easy_task.py
@@ -141,96 +127,12 @@ Audio-and-Lyrics-Multi-Modal-Clustering-VAE/
 - **Features**: All modalities with advanced fusion
 - **Output**: Comprehensive metrics and reconstruction visualizations
 
-## 📊 Results Interpretation
-
-Each experiment generates:
-
-### Metrics Files (`clustering_metric.csv`)
-- **Silhouette Score**: Measures cluster separation (-1 to 1, higher is better)
-- **Calinski-Harabasz**: Ratio of between-cluster to within-cluster dispersion
-- **Davies-Bouldin**: Average similarity between clusters (lower is better)
-- **ARI/NMI**: External validation if ground truth labels available
-
 ### Visualizations
-- **t-SNE/UMAP plots**: 2D projections of latent spaces
+- **t-SNE plots**: 2D projections of latent spaces
 - **Loss curves**: Training/validation loss over epochs
 - **Reconstructions**: Original vs reconstructed samples
 - **Cluster visualizations**: Latent space colored by cluster assignments
-
-## ⚙️ Configuration
-
-Edit configuration files in `src/*/config.py` to adjust:
-
-```python
-# Example configuration (easy_task/config.py)
-DATA_DIR = "data/raw/multimodal-mirex-emotion-dataset"
-RESULTS_DIR = "results/easy_task"
-BATCH_SIZE = 32
-LATENT_DIM = 64
-LEARNING_RATE = 1e-3
-NUM_EPOCHS = 100
-SEED = 42
 ```
-
-## 🔧 Customization
-
-### Add New Features
-1. Extend `feature_engineering.py` with new feature extraction methods
-2. Update `data_pipeline.py` to include new features
-3. Adjust model input dimensions in `vae.py` or `models.py`
-
-### Add New Models
-1. Implement model in `models.py` or `vae.py`
-2. Add corresponding loss function in `loss.py`
-3. Update `training_pipeline.py` to support new model
-
-### Change Clustering Algorithms
-Modify the clustering section in `training_pipeline.py`:
-```python
-from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
-
-# Change clustering algorithm
-clusters = KMeans(n_clusters=8).fit_predict(latent_vectors)
-# or
-clusters = DBSCAN(eps=0.5, min_samples=5).fit_predict(latent_vectors)
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Kaggle API Error**
-   ```
-   OSError: Could not find kaggle.json.
-   ```
-   **Solution**: Ensure `kaggle.json` is in `~/.kaggle/` with proper permissions:
-   ```bash
-   chmod 600 ~/.kaggle/kaggle.json
-   ```
-
-2. **Out of Memory**
-   **Solution**: Reduce batch size in config:
-   ```python
-   BATCH_SIZE = 16  # Instead of 32
-   ```
-
-3. **Missing Dependencies**
-   **Solution**: Install missing packages:
-   ```bash
-   pip install [missing-package-name]
-   ```
-
-4. **Slow Feature Extraction**
-   **Solution**: Implement caching in `feature_engineering.py`:
-   ```python
-   import joblib
-   cache_path = f"cache/{feature_name}.pkl"
-   if os.path.exists(cache_path):
-       features = joblib.load(cache_path)
-   else:
-       features = extract_features(data)
-       joblib.dump(features, cache_path)
-   ```
 
 ## 📚 Dataset Information
 
@@ -291,35 +193,6 @@ For questions or issues, please:
 1. Open an issue on GitHub
 2. Provide detailed description and error logs
 3. Include your environment details
-
-## 🚀 Advanced Usage
-
-### Using GPU Acceleration
-```python
-# In training_pipeline.py, ensure:
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model.to(device)
-```
-
-### Reproducibility
-Set random seeds for reproducibility:
-```python
-import random
-import numpy as np
-import torch
-
-SEED = 42
-random.seed(SEED)
-np.random.seed(SEED)
-torch.manual_seed(SEED)
-if torch.cuda.is_available():
-    torch.cuda.manual_seed_all(SEED)
-```
-
-### Extending to New Datasets
-1. Update `data_ingestion.py` to handle new file formats
-2. Modify `preprocess.py` for dataset-specific preprocessing
-3. Adjust paths in `config.py`
 
 ---
 **Note**: This project is for research purposes. Always respect copyright when working with audio data.
