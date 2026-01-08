@@ -132,7 +132,6 @@ Audio-and-Lyrics-Multi-Modal-Clustering-VAE/
 - **Loss curves**: Training/validation loss over epochs
 - **Reconstructions**: Original vs reconstructed samples
 - **Cluster visualizations**: Latent space colored by cluster assignments
-```
 
 ## 📚 Dataset Information
 
