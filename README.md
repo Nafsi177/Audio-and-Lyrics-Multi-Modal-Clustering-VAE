@@ -163,20 +163,6 @@ data/raw/multimodal-mirex-emotion-dataset/
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🙏 Citation
-
-If you use this code or dataset in your research, please cite:
-
-```bibtex
-@misc{multimodal_mirex_emotion_dataset,
-  author = {Sparsh, I.},
-  title = {Multi-modal MIREX Emotion Dataset},
-  year = {2023},
-  publisher = {Kaggle},
-  howpublished = {\url{https://www.kaggle.com/imsparsh/multimodal-mirex-emotion-dataset}}
-}
-```
-
 ## 🤝 Contributing
 
 1. Fork the repository
