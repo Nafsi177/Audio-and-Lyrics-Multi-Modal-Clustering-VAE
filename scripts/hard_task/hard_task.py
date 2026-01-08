@@ -4,7 +4,6 @@ import torch
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 # Path setup
 sys.path.append(os.getcwd())
@@ -51,20 +50,34 @@ def evaluate_clustering(features, labels_true, algo_name):
         "Silhouette": silhouette_score(features, labels_pred),
         "NMI": normalized_mutual_info_score(labels_true, labels_pred),
         "ARI": adjusted_rand_score(labels_true, labels_pred),
-        "Purity": cluster_purity(labels_true, labels_pred)
+        "Purity": cluster_purity(labels_true, labels_pred),
+        "labels_pred": labels_pred # Keep for plotting
     }
 
-# --- Plotting Helper ---
-def save_latent_plot(features, labels, title, filename):
+# --- Plotting Helper (Styled like easy_task.py) ---
+def save_latent_plot(features, pred_labels, title, filename):
     if features.shape[1] > 50:
         features = PCA(n_components=50, random_state=SEED).fit_transform(features)
     
-    tsne = TSNE(n_components=2, random_state=SEED, perplexity=30)
+    tsne = TSNE(n_components=2, random_state=SEED, perplexity=30, init="pca", learning_rate="auto")
     emb = tsne.fit_transform(features)
     
-    plt.figure(figsize=(10, 8))
-    sns.scatterplot(x=emb[:,0], y=emb[:,1], hue=labels, palette="tab10", s=60, alpha=0.8)
+    plt.figure(figsize=(8, 6))
+    scatter = plt.scatter(
+        emb[:, 0], 
+        emb[:, 1],
+        c=pred_labels, 
+        cmap=plt.get_cmap("rainbow"),
+        s=30, 
+        edgecolor='k', 
+        alpha=0.8
+    )
+    
     plt.title(title)
+    # Match colorbar style: one tick per cluster
+    unique_labels = sorted(list(set(pred_labels)))
+    plt.colorbar(scatter, ticks=unique_labels, label="Cluster")
+    
     plt.savefig(os.path.join(VIS_DIR, filename))
     plt.close()
 
@@ -92,6 +105,7 @@ def save_reconstruction_plot(model, loader, device, name, is_cvae=False):
     fig, axes = plt.subplots(2, 4, figsize=(12, 6))
     for i in range(4):
         if i >= len(orig): break
+        # Using magma as requested in your original hard_task script
         axes[0, i].imshow(orig[i, 0], aspect='auto', origin='lower', cmap='magma')
         axes[0, i].set_title("Original")
         axes[0, i].axis('off')
@@ -116,7 +130,7 @@ def run_hard_task():
     labels_int = np.array([label_map[g] for g in genres])
     
     train_loader, val_loader, n_classes = get_hard_dataloaders(audio, text, labels_int, hard_configs.batch_size)
-    results = []
+    metrics_log = []
 
     # --- 2. Baselines ---
     print("\n>>> 2. Baselines...")
@@ -125,20 +139,23 @@ def run_hard_task():
     
     # PCA + KMeans
     pca_feat = PCA(n_components=32, random_state=SEED).fit_transform(flat_data)
-    results.append(evaluate_clustering(pca_feat, labels_int, "Baseline (PCA+KMeans)"))
+    eval_pca = evaluate_clustering(pca_feat, labels_int, "Baseline (PCA+KMeans)")
+    save_latent_plot(pca_feat, eval_pca.pop('labels_pred'), "t-SNE of PCA features + KMeans", "tsne_pca_baseline.png")
+    metrics_log.append(eval_pca)
     
-    # Spectral (Robust)
+    # Spectral
     try:
-        print("   Running Spectral Clustering (Robust Mode)...")
+        print("   Running Spectral Clustering...")
         spec = SpectralClustering(n_clusters=n_classes, affinity='nearest_neighbors', random_state=SEED)
-        labels_spec = spec.fit_predict(pca_feat) # Use PCA feats for speed
-        results.append({
+        labels_spec = spec.fit_predict(pca_feat) 
+        metrics_log.append({
             "Method": "Baseline (Spectral)",
             "Silhouette": silhouette_score(pca_feat, labels_spec),
             "NMI": normalized_mutual_info_score(labels_int, labels_spec),
             "ARI": adjusted_rand_score(labels_int, labels_spec),
             "Purity": cluster_purity(labels_int, labels_spec)
         })
+        save_latent_plot(pca_feat, labels_spec, "t-SNE of PCA features + Spectral", "tsne_spectral_baseline.png")
     except Exception as e:
         print(f"   Spectral Failed: {e}")
 
@@ -156,13 +173,14 @@ def run_hard_task():
             _, _, z = ae(ba, bt)
             ae_feats.append(z.cpu().numpy())
     ae_feats = np.vstack(ae_feats)
-    results.append(evaluate_clustering(ae_feats, labels_int, "Baseline (Autoencoder)"))
-    save_latent_plot(ae_feats, genres, "Autoencoder Latent", "tsne_ae.png")
+    eval_ae = evaluate_clustering(ae_feats, labels_int, "Baseline (Autoencoder)")
+    save_latent_plot(ae_feats, eval_ae.pop('labels_pred'), "t-SNE of AE Latent Space + KMeans", "tsne_ae.png")
+    metrics_log.append(eval_ae)
     save_reconstruction_plot(ae, val_loader, DEVICE, "Autoencoder")
 
     # --- 3. Beta-VAE ---
     print(f"\n>>> 3. Training Beta-VAE (Beta={hard_configs.beta_value})...")
-    beta_vae = HybridVAE(latent_dim=32) # Reusing Medium Task Model
+    beta_vae = HybridVAE(latent_dim=32)
     beta_vae, _ = train_hard_task(beta_vae, train_loader, val_loader, hard_configs.epochs, hard_configs.beta_value, DEVICE, "BetaVAE", BASE_DIR)
     
     beta_vae.eval()
@@ -174,26 +192,24 @@ def run_hard_task():
             _, _, mu, _ = beta_vae(ba, bt)
             beta_feats.append(mu.cpu().numpy())
     beta_feats = np.vstack(beta_feats)
-    results.append(evaluate_clustering(beta_feats, labels_int, f"Beta-VAE (b={hard_configs.beta_value})"))
-    save_latent_plot(beta_feats, genres, f"Beta-VAE (b={hard_configs.beta_value})", "tsne_beta.png")
+    eval_beta = evaluate_clustering(beta_feats, labels_int, f"Beta-VAE (b={hard_configs.beta_value})")
+    save_latent_plot(beta_feats, eval_beta.pop('labels_pred'), f"t-SNE of Beta-VAE (b={hard_configs.beta_value}) + KMeans", "tsne_beta.png")
+    metrics_log.append(eval_beta)
     save_reconstruction_plot(beta_vae, val_loader, DEVICE, "BetaVAE")
 
     # --- 4. CVAE ---
     print("\n>>> 4. Training CVAE...")
     cvae = ConditionalVAE(n_classes=n_classes, latent_dim=32)
-    # CVAE usually uses standard VAE loss (beta=1) but conditioned
     cvae, _ = train_hard_task(cvae, train_loader, val_loader, hard_configs.epochs, 1.0, DEVICE, "CVAE", BASE_DIR)
     
     cvae.eval()
     cvae_feats = []
     with torch.no_grad():
-        # Iterate carefully to match labels
         for i in range(0, len(audio), 32):
             end = min(i+32, len(audio))
             ba = torch.tensor(audio[i:end]).to(DEVICE)
             bt = torch.tensor(text[i:end]).to(DEVICE)
             
-            # One hot labels manually for inference block
             batch_lbls = labels_int[i:end]
             onehot = np.zeros((len(batch_lbls), n_classes))
             onehot[np.arange(len(batch_lbls)), batch_lbls] = 1
@@ -203,12 +219,13 @@ def run_hard_task():
             cvae_feats.append(mu.cpu().numpy())
     cvae_feats = np.vstack(cvae_feats)
     
-    results.append(evaluate_clustering(cvae_feats, labels_int, "CVAE (Latent)"))
-    save_latent_plot(cvae_feats, genres, "CVAE Latent", "tsne_cvae.png")
+    eval_cvae = evaluate_clustering(cvae_feats, labels_int, "CVAE (Latent)")
+    save_latent_plot(cvae_feats, eval_cvae.pop('labels_pred'), "t-SNE of CVAE Latent Space + KMeans", "tsne_cvae.png")
+    metrics_log.append(eval_cvae)
     save_reconstruction_plot(cvae, val_loader, DEVICE, "CVAE", is_cvae=True)
 
     # --- Save ---
-    df = pd.DataFrame(results)
+    df = pd.DataFrame(metrics_log)
     df.to_csv(os.path.join(BASE_DIR, "hard_task_metrics.csv"), index=False)
     print("\n>>> Hard Task Completed Successfully!")
     print(df)

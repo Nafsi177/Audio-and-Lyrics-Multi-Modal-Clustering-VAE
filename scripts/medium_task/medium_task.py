@@ -31,38 +31,32 @@ VIS_DIR = os.path.join(BASE_RESULT_DIR, "latent_visualization")
 CURVE_DIR = os.path.join(BASE_RESULT_DIR, "curves")
 CHECKPOINT_DIR = "./checkpoints/medium"
 
-# --- Visualization Helper ---
+# --- Visualization Helper (Styled like easy_task.py) ---
 def save_cluster_plot(embedding_2d, labels, title, filename):
-    # Ensure filename is safe (remove parentheses and spaces)
+    # Ensure filename is safe
     safe_filename = filename.replace("(", "").replace(")", "").replace(" ", "_")
     
     plt.figure(figsize=(8, 6))
-    unique_labels = np.unique(labels)
-    cmap = 'tab10' if len(unique_labels) <= 10 else 'rainbow'
     
+    # Use the rainbow colormap and styling from easy_task.py
     scatter = plt.scatter(
         embedding_2d[:, 0], 
         embedding_2d[:, 1],
         c=labels, 
-        cmap=cmap,
-        s=20, 
+        cmap=plt.get_cmap("rainbow"),
+        s=30, 
         edgecolor='k', 
-        alpha=0.7,
-        linewidth=0.5
+        alpha=0.8
     )
     
-    if -1 in unique_labels:
-        plt.legend(*scatter.legend_elements(), title="Cluster ID")
-    else:
-        plt.colorbar(scatter, ticks=unique_labels, label="Cluster ID")
-        
     plt.title(title)
-    plt.xlabel("t-SNE 1")
-    plt.ylabel("t-SSE 2")
-    plt.grid(True, alpha=0.3)
+    
+    # Colorbar logic matching easy_task.py
+    unique_labels = sorted(list(set(labels)))
+    cb = plt.colorbar(scatter, ticks=unique_labels, label="Cluster")
     
     save_path = os.path.join(VIS_DIR, safe_filename)
-    plt.savefig(save_path, dpi=150)
+    plt.savefig(save_path)
     plt.close()
     print(f"Saved plot: {safe_filename}")
 
@@ -91,7 +85,7 @@ def evaluate_and_plot(features, labels_true, feature_name):
         "ARI": adjusted_rand_score(labels_true, km.labels_),
         "Calinski-Harabasz": calinski_harabasz_score(features, km.labels_)
     })
-    save_cluster_plot(embedding_2d, km.labels_, f"{feature_name} - KMeans", f"{feature_name}_KMeans.png")
+    save_cluster_plot(embedding_2d, km.labels_, f"t-SNE of {feature_name} + KMeans", f"{feature_name}_KMeans.png")
 
     # Agglomerative
     agg = AgglomerativeClustering(n_clusters=K).fit_predict(features)
@@ -102,22 +96,22 @@ def evaluate_and_plot(features, labels_true, feature_name):
         "ARI": adjusted_rand_score(labels_true, agg),
         "Calinski-Harabasz": calinski_harabasz_score(features, agg)
     })
-    save_cluster_plot(embedding_2d, agg, f"{feature_name} - Agglomerative", f"{feature_name}_Agglomerative.png")
+    save_cluster_plot(embedding_2d, agg, f"t-SNE of {feature_name} + Agglomerative", f"{feature_name}_Agglomerative.png")
 
     # DBSCAN
     db = DBSCAN(eps=5.0, min_samples=4).fit_predict(features)
     unique_db = len(set(db))
     if unique_db > 1:
-        metrics = [silhouette_score(features, db), davies_bouldin_score(features, db), 
-                   adjusted_rand_score(labels_true, db), calinski_harabasz_score(features, db)]
+        m_vals = [silhouette_score(features, db), davies_bouldin_score(features, db), 
+                  adjusted_rand_score(labels_true, db), calinski_harabasz_score(features, db)]
     else:
-        metrics = [-1, -1, -1, -1]
+        m_vals = [-1, -1, -1, -1]
         
     results.append({
         "Feature": feature_name, "Algorithm": "DBSCAN",
-        "Silhouette": metrics[0], "Davies-Bouldin": metrics[1], "ARI": metrics[2], "Calinski-Harabasz": metrics[3]
+        "Silhouette": m_vals[0], "Davies-Bouldin": m_vals[1], "ARI": m_vals[2], "Calinski-Harabasz": m_vals[3]
     })
-    save_cluster_plot(embedding_2d, db, f"{feature_name} - DBSCAN", f"{feature_name}_DBSCAN.png")
+    save_cluster_plot(embedding_2d, db, f"t-SNE of {feature_name} + DBSCAN", f"{feature_name}_DBSCAN.png")
     
     return results
 
