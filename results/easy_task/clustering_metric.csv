@@ -1,0 +1,3 @@
+method,no of cluster(K),silhouette,calinski_harabasz
+PCA(10)+KMeans,5,0.11708846688270569,170.82500319751537
+VAE(latent_mu)+KMeans,5,0.3299631178379059,557.1079565873507

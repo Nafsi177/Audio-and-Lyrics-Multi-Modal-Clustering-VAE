@@ -1,0 +1,13 @@
+torch==2.7.1
+torchaudio
+librosa
+numpy
+pandas
+scikit-learn
+matplotlib
+seaborn
+tqdm
+scikit-image
+kagglehub
+sentence-transformers
+umap-learn
