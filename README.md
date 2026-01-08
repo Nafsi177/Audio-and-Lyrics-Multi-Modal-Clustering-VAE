@@ -40,7 +40,7 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-### 6. Reproduce Experiments result
+### 4. Reproduce Experiments result
 ```bash
 # Easy task - Basic VAE vs PCA
 python scripts/easy_task/easy_task.py
@@ -51,6 +51,7 @@ python scripts/medium_task/medium_task.py
 # Hard task - Complex VAE variants
 python scripts/hard_task/hard_task.py
 ```
+**Note**: Make sure to run in the following sequence: easy_task.py --> medium_task.py -->hard_task.py 
 
 ## 📁 Project Structure
 
