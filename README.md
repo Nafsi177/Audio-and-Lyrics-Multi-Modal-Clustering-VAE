@@ -15,7 +15,7 @@ This project explores multi-modal representation learning for music emotion reco
 - **Models**: VAE variants (ConvVAE, BetaVAE, CVAE) vs PCA baselines
 - **Clustering**: K-Means, DBSCAN, Agglomerative clustering
 
-## 🚀 Reproducing experiment results...
+##  Reproducing experiment results...
 
 ### 1. Clone Repository
 ```bash
@@ -163,7 +163,7 @@ data/raw/multimodal-mirex-emotion-dataset/
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
@@ -171,7 +171,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 4. Push to branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📧 Contact
+## Contact
 
 For questions or issues, please:
 1. Open an issue on GitHub
@@ -179,4 +179,4 @@ For questions or issues, please:
 3. Include your environment details
 
 ---
-**Note**: This project is for research purposes. Always respect copyright when working with audio data.
+**Note**: This project is for research purposes. 
