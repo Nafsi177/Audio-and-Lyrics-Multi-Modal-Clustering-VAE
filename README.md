@@ -157,7 +157,6 @@ data/raw/multimodal-mirex-emotion-dataset/
 │   ├── song1.mid
 │   ├── song2.mid
 │   └── ...
-└── metadata.csv  # (if available)
 ```
 
 ## 📄 License
