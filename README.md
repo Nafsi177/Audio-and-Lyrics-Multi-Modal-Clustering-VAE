@@ -4,7 +4,8 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Kaggle Dataset](https://img.shields.io/badge/dataset-Kaggle-blue)](https://www.kaggle.com/imsparsh/multimodal-mirex-emotion-dataset)
 
-A reproducible research repository for multi-modal clustering using audio, lyrics, and MIDI data with VAE variants and PCA baselines. This project implements three progressively complex tasks (easy, medium, hard) for clustering in music data (audio+text) using different varients of VAE.
+This reporsitory is created for CSE715 course assignment, under professor Moin Mostakim.
+This is a reproducible research repository for multi-modal clustering using audio, lyrics, and MIDI data with VAE variants and PCA baselines. This project implements three progressively complex tasks (easy, medium, hard) for clustering in music data (audio+text) using different varients of VAE.
 
 ## 📊 Overview
 
@@ -19,7 +20,7 @@ This project explores multi-modal representation learning for music emotion reco
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/your-username/Audio-and-Lyrics-Multi-Modal-Clustering-VAE.git
+git clone https://github.com/Nafsi177/Audio-and-Lyrics-Multi-Modal-Clustering-VAE.git
 cd Audio-and-Lyrics-Multi-Modal-Clustering-VAE
 ```
 
@@ -41,6 +42,7 @@ pip install -e .
 ```
 
 ### 4. Reproduce Experiments result
+Running the following py scripts will reproduce results in results/ folder....
 ```bash
 # Easy task - Basic VAE vs PCA
 python scripts/easy_task/easy_task.py
@@ -52,6 +54,9 @@ python scripts/medium_task/medium_task.py
 python scripts/hard_task/hard_task.py
 ```
 **Note**: Make sure to run in the following sequence: easy_task.py --> medium_task.py -->hard_task.py 
+
+
+
 
 ## 📁 Project Structure
 
@@ -107,6 +112,43 @@ Audio-and-Lyrics-Multi-Modal-Clustering-VAE/
 │           └── metadata.csv
 └── README.md                    # This file
 ```
+
+
+## Results
+These were the results I got , when i ran the experiment last time.
+- Easy task
+
+| Method                  | Number of Clusters (K) | Silhouette Score | Calinski-Harabasz Index |
+|-------------------------|-----------------------|----------------|------------------------|
+| PCA(10) + KMeans        | 5                     | 0.1171         | 170.83                 |
+| VAE(latent_mu) + KMeans | 5                     | 0.3300         | 557.11                 |
+
+- Medium task
+
+| Feature               | Algorithm     | Silhouette | Davies-Bouldin | ARI       | Calinski-Harabasz |
+|-----------------------|--------------|------------|----------------|-----------|------------------|
+| Baseline_PCA_Audio    | KMeans       | 0.116      | 2.225          | 0.0174    | 187.21           |
+| Baseline_PCA_Audio    | Agglomerative| 0.072      | 2.229          | 0.0182    | 165.48           |
+| Baseline_PCA_Audio    | DBSCAN       | -1.0       | -1.0           | -1.0      | -1.0             |
+| Baseline_PCA_audio+text   | KMeans       | 0.116      | 2.227          | 0.0174    | 186.81           |
+| Baseline_PCA_audio+text   | Agglomerative| 0.064      | 2.438          | 0.0176    | 164.40           |
+| Baseline_PCA_audio+text   | DBSCAN       | -1.0       | -1.0           | -1.0      | -1.0             |
+| ConvVAE_Audio         | KMeans       | 0.066      | 2.457          | 0.0072    | 65.91            |
+| ConvVAE_Audio         | Agglomerative| 0.053      | 2.403          | 0.0171    | 51.15            |
+| ConvVAE_Audio         | DBSCAN       | 0.449      | 2.669          | -0.0002   | 12.65            |
+| HybridVAE_audio+text        | KMeans       | 0.090      | 2.268          | 0.0186    | 69.04            |
+| HybridVAE_audio+text        | Agglomerative| 0.077      | 2.078          | 0.0206    | 53.95            |
+| HybridVAE_audio+text        | DBSCAN       | 0.477      | 2.393          | -0.0003   | 13.45            |
+- hard task
+
+| Method                   | Silhouette | NMI    | ARI    | Purity  |
+|--------------------------|------------|--------|--------|---------|
+| Baseline (PCA+KMeans)    | 0.136      | 0.0413 | 0.0207 | 0.3102  |
+| Baseline (Spectral)      | 0.087      | 0.0352 | 0.0191 | 0.2997  |
+| Baseline (Autoencoder)   | 0.096      | 0.0317 | 0.0184 | 0.2971  |
+| Beta-VAE (b=4.0)         | 0.207      | 0.0314 | 0.0174 | 0.3024  |
+| CVAE (Latent)            | 0.085      | 0.0137 | 0.0015 | 0.2762  |
+
 ## 📈 Experiments
 
 ### Easy Task
@@ -128,44 +170,12 @@ Audio-and-Lyrics-Multi-Modal-Clustering-VAE/
 - **Output**: Comprehensive metrics and reconstruction visualizations
 
 ### Visualizations
+visualizations can be found at: results/task-type/latent_visualization or visualization
 - **t-SNE plots**: 2D projections of latent spaces
 - **Loss curves**: Training/validation loss over epochs
 - **Reconstructions**: Original vs reconstructed samples
 - **Cluster visualizations**: Latent space colored by cluster assignments
 
-## Results
-- Easy task
-
-| Method                  | Number of Clusters (K) | Silhouette Score | Calinski-Harabasz Index |
-|-------------------------|-----------------------|----------------|------------------------|
-| PCA(10) + KMeans        | 5                     | 0.1171         | 170.83                 |
-| VAE(latent_mu) + KMeans | 5                     | 0.3300         | 557.11                 |
-
-- Medium task
-
-| Feature               | Algorithm     | Silhouette | Davies-Bouldin | ARI       | Calinski-Harabasz |
-|-----------------------|--------------|------------|----------------|-----------|------------------|
-| Baseline_PCA_Audio    | KMeans       | 0.116      | 2.225          | 0.0174    | 187.21           |
-| Baseline_PCA_Audio    | Agglomerative| 0.072      | 2.229          | 0.0182    | 165.48           |
-| Baseline_PCA_Audio    | DBSCAN       | -1.0       | -1.0           | -1.0      | -1.0             |
-| Baseline_PCA_Hybrid   | KMeans       | 0.116      | 2.227          | 0.0174    | 186.81           |
-| Baseline_PCA_Hybrid   | Agglomerative| 0.064      | 2.438          | 0.0176    | 164.40           |
-| Baseline_PCA_Hybrid   | DBSCAN       | -1.0       | -1.0           | -1.0      | -1.0             |
-| ConvVAE_Audio         | KMeans       | 0.066      | 2.457          | 0.0072    | 65.91            |
-| ConvVAE_Audio         | Agglomerative| 0.053      | 2.403          | 0.0171    | 51.15            |
-| ConvVAE_Audio         | DBSCAN       | 0.449      | 2.669          | -0.0002   | 12.65            |
-| HybridVAE_Full        | KMeans       | 0.090      | 2.268          | 0.0186    | 69.04            |
-| HybridVAE_Full        | Agglomerative| 0.077      | 2.078          | 0.0206    | 53.95            |
-| HybridVAE_Full        | DBSCAN       | 0.477      | 2.393          | -0.0003   | 13.45            |
-- hard task
-
-| Method                   | Silhouette | NMI    | ARI    | Purity  |
-|--------------------------|------------|--------|--------|---------|
-| Baseline (PCA+KMeans)    | 0.136      | 0.0413 | 0.0207 | 0.3102  |
-| Baseline (Spectral)      | 0.087      | 0.0352 | 0.0191 | 0.2997  |
-| Baseline (Autoencoder)   | 0.096      | 0.0317 | 0.0184 | 0.2971  |
-| Beta-VAE (b=4.0)         | 0.207      | 0.0314 | 0.0174 | 0.3024  |
-| CVAE (Latent)            | 0.085      | 0.0137 | 0.0015 | 0.2762  |
 
 ## 📚 Dataset Information
 
